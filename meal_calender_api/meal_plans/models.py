@@ -1,6 +1,4 @@
 from django.db import models
-
-# meal_plans/models.py
 from recipes.models import Recipe       # ← imports from recipes app
 from users.models import User           # ← imports from users app
 
