@@ -1,0 +1,8 @@
+openai
+python-dotenv
+google-cloud-texttospeech
+django
+djangorestframework
+markdown
+django-filter
+djangorestframework-simplejwt
