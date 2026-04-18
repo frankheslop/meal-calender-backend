@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import importlib
@@ -132,6 +133,7 @@ def _to_list(value: Any) -> list[str]:
 
 def build_openai_chat_completions_request(
     profile: UserProfile,
+    meal_type: str = "dinner",
     model: str = DEFAULT_RECIPE_MODEL,
 ) -> dict[str, Any]:
     """Builds a request payload for OpenAI Chat Completions API."""
@@ -139,7 +141,7 @@ def build_openai_chat_completions_request(
         "model": model,
         "messages": [
             {"role": "system", "content": RECIPE_SYSTEM_PROMPT},
-            {"role": "user", "content": build_recipe_user_prompt(profile)},
+            {"role": "user", "content": build_recipe_user_prompt(profile, meal_type=meal_type)},
         ],
         "response_format": {
             "type": "json_schema",
@@ -148,9 +150,20 @@ def build_openai_chat_completions_request(
     }
 
 
+def _parse_recipe_completion_content(content: str | None) -> dict[str, Any]:
+    if not content:
+        raise RuntimeError("OpenAI returned an empty response")
+
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("OpenAI response was not valid JSON") from exc
+
+
 def generate_with_openai_chat_completions(
     profile: UserProfile,
     *,
+    meal_type: str = "dinner",
     model: str = DEFAULT_RECIPE_MODEL,
     api_key: str | None = None,
 ) -> dict[str, Any]:
@@ -166,17 +179,69 @@ def generate_with_openai_chat_completions(
         raise RuntimeError("OPENAI_API_KEY is not set")
 
     client = OpenAI(api_key=key)
-    payload = build_openai_chat_completions_request(profile=profile, model=model)
+    payload = build_openai_chat_completions_request(
+        profile=profile,
+        meal_type=meal_type,
+        model=model,
+    )
     completion = client.chat.completions.create(**payload)
+    return _parse_recipe_completion_content(completion.choices[0].message.content)
 
-    content = completion.choices[0].message.content
-    if not content:
-        raise RuntimeError("OpenAI returned an empty response")
 
+async def generate_with_openai_chat_completions_async(
+    profile: UserProfile,
+    *,
+    meal_type: str = "dinner",
+    model: str = DEFAULT_RECIPE_MODEL,
+    api_key: str | None = None,
+) -> dict[str, Any]:
+    """Asynchronously calls OpenAI chat.completions and returns validated recipe JSON."""
     try:
-        return json.loads(content)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError("OpenAI response was not valid JSON") from exc
+        openai_module = importlib.import_module("openai")
+        AsyncOpenAI = openai_module.AsyncOpenAI
+    except ImportError as exc:
+        raise RuntimeError("openai package is required. Install with: uv pip install openai") from exc
+
+    key = api_key or os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY is not set")
+
+    client = AsyncOpenAI(api_key=key)
+    payload = build_openai_chat_completions_request(
+        profile=profile,
+        meal_type=meal_type,
+        model=model,
+    )
+    completion = await client.chat.completions.create(**payload)
+    return _parse_recipe_completion_content(completion.choices[0].message.content)
+
+
+async def generate_many_with_openai_chat_completions_async(
+    profile: UserProfile,
+    meal_types: list[str],
+    *,
+    model: str = DEFAULT_RECIPE_MODEL,
+    api_key: str | None = None,
+    max_concurrency: int = 5,
+) -> list[dict[str, Any]]:
+    """Generates multiple recipes concurrently, preserving input order."""
+    if not meal_types:
+        return []
+
+    concurrency = max(1, max_concurrency)
+    semaphore = asyncio.Semaphore(concurrency)
+
+    async def _generate_one(meal_type: str) -> dict[str, Any]:
+        async with semaphore:
+            return await generate_with_openai_chat_completions_async(
+                profile=profile,
+                meal_type=meal_type,
+                model=model,
+                api_key=api_key,
+            )
+
+    tasks = [_generate_one(meal_type) for meal_type in meal_types]
+    return await asyncio.gather(*tasks)
     
 
 # recipes/prompt_builders.py
