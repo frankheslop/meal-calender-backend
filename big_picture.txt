@@ -1,0 +1,95 @@
+Meal Calendar Backend - Big Picture (v2)
+
+Product goal
+- Build an AI-assisted weekly meal planner that turns a user profile into:
+  1) recipes,
+  2) a weekly calendar assignment,
+  3) one consolidated grocery list,
+  4) subscription-gated access.
+
+Current app list
+1. users
+2. questionaire
+3. recipes
+4. meal_plans
+5. groceries
+6. subscriptions
+
+Reality check from current code state
+- users, questionaire, recipes, meal_plans contain the core domain models.
+- groceries and subscriptions are mostly placeholders right now.
+- Several files still have scaffold-level views and not yet complete endpoint logic.
+
+Recommended architecture now (MVP)
+
+Keep these apps as separate bounded domains
+1. users
+	- Authentication, profile basics, account lifecycle.
+	- Keep trial metadata here only if it is simple (for example trial_end_date).
+
+2. questionaire
+	- UserProfile and all preference data used for generation.
+	- Validation for meal slots, cuisine preferences, and unique recipe counts.
+
+3. recipes
+	- Prompt construction and LLM calls.
+	- Generated recipe persistence and normalization.
+	- Async generation and concurrency controls.
+
+4. meal_plans
+	- Week-level planning and assignment of recipes to days/slots.
+	- Rotation logic (for example Mon-Tue recipe A, Wed-Thu recipe B, Fri-Sun recipe C).
+
+Combine this for now
+5. Move groceries logic into meal_plans (temporarily)
+	- Reason: grocery list is a direct projection of a weekly plan + servings + household size.
+	- This avoids a mostly-empty app and lets you move faster while domain logic is still changing.
+	- Later, if grocery features become large (price comparison, store mapping, pantry deduction), split groceries back into its own app.
+
+Do not split this yet
+6. Keep subscriptions as minimal, but separate if billing starts soon
+	- If you integrate Stripe in the near term, keep subscriptions as its own app.
+	- If billing is not immediate, store a minimal trial flag/date in users first, then extract to subscriptions when billing webhooks and invoices are added.
+
+Recommended target app structure after light consolidation
+- users
+- questionaire
+- recipes
+- meal_plans (includes grocery aggregation services for now)
+- subscriptions (only if billing starts now)
+
+Data flow (end-to-end)
+1. User signs up and creates profile.
+2. User completes questionnaire preferences.
+3. recipes generates N unique recipes per selected meal slot.
+4. meal_plans assigns recipes across the 7-day week according to unique_recipes_per_meal.
+5. meal_plans aggregates all ingredients into one grocery list, scaled by household_size and number of days each recipe appears.
+6. Access to generation endpoints is gated by trial/subscription state.
+
+Storage decisions
+- Do not store generated recipes as per-user JSON files on disk for production.
+- Prefer database persistence for queryability, history, deduplication, and backups.
+- Optional optimization: store raw model response JSON in a JSONField for trace/debug, but keep normalized recipe columns too.
+
+Service boundary suggestions
+- recipes/services.py:
+  - build prompts
+  - call LLM (sync + async)
+  - validate/parse structured JSON
+- meal_plans/services.py:
+  - generate weekly assignment
+  - grocery rollup and quantity scaling
+  - calendar shaping for API response
+
+Short-term cleanup checklist
+1. Fix spelling consistently: questionnaire (rename app later with a migration plan).
+2. Ensure all app views import required DRF classes and serializers.
+3. Move misplaced view code out of model files.
+4. Add app registrations and API routes in project settings/urls.
+5. Add tests for weekly distribution logic and grocery scaling math.
+
+Decision summary
+- Yes, some apps can be combined right now: fold groceries into meal_plans for MVP speed.
+- Keep recipes separate from meal_plans.
+- Keep users separate.
+- Keep subscriptions separate only if billing work starts now; otherwise defer and keep a minimal trial field on users.

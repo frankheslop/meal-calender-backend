@@ -1,0 +1,200 @@
+# Meal Calendar — Questionnaire Questions
+=====================================================
+
+## Suggested Flow
+
+Section 1: Goal          (1 question)
+     ↓
+Section 2: Diet          (2 questions)
+     ↓
+Section 3: Meals         (2 questions + dynamic sub-questions)
+     ↓
+Section 4: Kitchen       (3 questions)
+     ↓
+Section 5: Taste         (1 question)
+     ↓
+Section 6: Calories      (1 question)
+     ↓
+     ✅ Complete — Generate my meal plan!
+
+
+=====================================================
+## Section 1 — Your Goals
+=====================================================
+
+Field: goal
+Question: "What is your main health goal?"
+
+Options:
+  - 🥗 Eat Healthy
+  - ⚖️  Lose Weight
+  - 💪 Gain Muscle
+  - ➡️  Maintain Weight
+
+
+=====================================================
+## Section 2 — Your Diet
+=====================================================
+
+Field: diet_type
+Question: "Do you follow a specific diet?"
+
+Options:
+  - No Restriction
+  - Vegetarian
+  - Vegan
+  - Keto
+  - Paleo
+  - Gluten Free
+  - Dairy Free
+  - Low Carb
+  - High Protein
+  - Mediterranean
+  - Halal
+  - Kosher
+  - Other
+
+---
+
+Field: allergies
+Question: "Do you have any food allergies or intolerances? Select all that apply."
+
+Options (multi-select):
+  - No Allergies
+  - Nuts
+  - Dairy
+  - Gluten
+  - Eggs
+  - Shellfish
+  - Soy
+  - Fish
+  - Sesame
+  - Other (free text input)
+
+
+=====================================================
+## Section 3 — Your Meals
+=====================================================
+
+Field: meal_slots
+Question: "Which meals do you want planned for you each day?"
+
+Options (multi-select — user can pick any combination):
+  - 🌅 Breakfast
+  - ☀️  Lunch
+  - 🌙 Dinner
+  - 🍎 Snack
+
+---
+
+Field: meals_per_day
+Note: Auto-calculated from meal_slots — no question needed.
+      If the user selects breakfast, lunch and dinner, this is set to 3 automatically.
+
+---
+
+Field: unique_recipes_per_meal
+Note: One sub-question per selected meal slot, shown dynamically after meal_slots is answered.
+
+Example sub-questions (if user selected breakfast, lunch and dinner):
+  - "How many different breakfast recipes do you want each week?"
+  - "How many different lunch recipes do you want each week?"
+  - "How many different dinner recipes do you want each week?"
+
+Helper text shown under each:
+  "1 = same meal every day, 3 = three different meals rotating across the week"
+
+Input: Number selector — 1 · 2 · 3 · 4 · 5
+
+
+=====================================================
+## Section 4 — Your Kitchen
+=====================================================
+
+Field: cooking_time
+Question: "How much time are you willing to spend cooking a single meal?"
+
+Options:
+  - ⚡ 15 minutes or less
+  - 🕐 30 minutes or less
+  - 🕑 1 hour or less
+  - 🍲 More than 1 hour
+
+---
+
+Field: cooking_skill
+Question: "How would you describe your cooking skill level?"
+
+Options:
+  - 🟢 Beginner     — I can follow simple recipes with basic techniques
+  - 🟡 Intermediate — I'm comfortable with most recipes and techniques
+  - 🔴 Advanced     — I enjoy complex recipes and refined techniques
+
+---
+
+Field: household_size
+Question: "How many people are you cooking for?"
+
+Input: Number stepper — 1 · 2 · 3 · 4 · 5 · 6+
+
+
+=====================================================
+## Section 5 — Your Taste
+=====================================================
+
+Field: cuisine_preferences
+Question: "What cuisines do you enjoy for lunch and dinner? Select all that apply."
+
+Options (multi-select):
+  - 🇮🇹 Italian
+  - 🇲🇽 Mexican
+  - 🇨🇳 Chinese
+  - 🇮🇳 Indian
+  - 🇺🇸 American
+  - 🫒 Mediterranean
+  - 🇹🇭 Thai
+  - 🇯🇵 Japanese
+  - 🇫🇷 French
+  - 🌍 Other
+  - 😐 No Preference
+
+Note shown to user:
+  "These preferences are applied to your lunch and dinner recipes.
+   Breakfast and snacks are kept simple and universal."
+
+
+=====================================================
+## Section 6 — Your Calories
+=====================================================
+
+Field: calories_per_day
+Question: "What is your daily calorie target?"
+
+Input: Slider or number input — range 1200 to 3500 kcal
+
+Helper text:
+  "Not sure? A typical adult needs around 2000 kcal per day."
+
+Optional:
+  "Calculate for me" button — opens a simple BMR calculator using
+  height, weight, age and activity level, and saves the result
+  directly into this field.
+
+
+=====================================================
+## Field → DB Reference
+=====================================================
+
+| Section  | Question Field             | DB Field                   | Input Type          |
+|----------|----------------------------|----------------------------|---------------------|
+| 1        | Health goal                | goal                       | Single select       |
+| 2        | Diet type                  | diet_type                  | Single select       |
+| 2        | Allergies                  | allergies                  | Multi-select + text |
+| 3        | Meal slots                 | meal_slots                 | Multi-select        |
+| 3        | Unique recipes (per meal)  | unique_recipes_per_meal    | Number selector x N |
+| 3        | Meals per day              | meals_per_day              | Auto-calculated     |
+| 4        | Cooking time               | cooking_time               | Single select       |
+| 4        | Cooking skill              | cooking_skill              | Single select       |
+| 4        | Household size             | household_size             | Number stepper      |
+| 5        | Cuisine preferences        | cuisine_preferences        | Multi-select        |
+| 6        | Daily calories             | calories_per_day           | Slider / number     |
