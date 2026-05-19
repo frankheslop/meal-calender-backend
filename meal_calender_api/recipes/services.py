@@ -8,7 +8,7 @@ import os
 import importlib
 from typing import Any
 
-from questionaire.models import UserProfile
+from questionnaire.models import UserProfile
 
 
 DEFAULT_RECIPE_MODEL = os.getenv("OPENAI_RECIPE_MODEL", "gpt-4.1-mini")
@@ -87,7 +87,6 @@ Follow these rules exactly:
 10. If constraints conflict, produce the closest valid recipe and reflect compromises using
     ingredient substitutions and conservative nutrition.
 """.strip()
-CUISINE_APPLICABLE_MEALS = {"dinner", "lunch"}  # snack and breakfast ignored
 
 MEAL_STYLE_OVERRIDES = {
     "breakfast": (
@@ -111,90 +110,58 @@ MEAL_STYLE_OVERRIDES = {
     ),
 }
 
-def _to_list(value: Any) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, list):
-        return [str(item).strip() for item in value if str(item).strip()]
-    if isinstance(value, str):
-        cleaned = value.strip()
-        if not cleaned:
-            return []
-        if cleaned.startswith("[") and cleaned.endswith("]"):
-            try:
-                parsed = json.loads(cleaned)
-                if isinstance(parsed, list):
-                    return [str(item).strip() for item in parsed if str(item).strip()]
-            except json.JSONDecodeError:
-                pass
-        return [part.strip() for part in cleaned.split(",") if part.strip()]
-    return [str(value).strip()]
+actual_input = {
+    "goal": UserProfile.goal,
+    "diet_type": UserProfile.diet_type,
+    "allergies": UserProfile.allergies,
+    "calories_per_day": UserProfile.calories_per_day,
+    "meals_per_day": UserProfile.meals_per_day,
+    "cooking_time": UserProfile.cooking_time,
+    "cooking_skill": UserProfile.cooking_skill,
+    "household_size": UserProfile.household_size,
+    "meal_slots": UserProfile.meal_slots,
+    "unique_recipes_per_meal": UserProfile.unique_recipes_per_meal,
+    "cuisine_preferences": UserProfile.cuisine_preferences,  
+}
 
 
-def build_openai_chat_completions_request(
-    profile: UserProfile,
-    meal_type: str = "dinner",
-    model: str = DEFAULT_RECIPE_MODEL,
-) -> dict[str, Any]:
-    """Builds a request payload for OpenAI Chat Completions API."""
-    return {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": RECIPE_SYSTEM_PROMPT},
-            {"role": "user", "content": build_recipe_user_prompt(profile, meal_type=meal_type)},
-        ],
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": RECIPE_JSON_SCHEMA,
-        },
-    }
+def build_recipe_user_prompts(input: dict) -> dict[str, str]:
+    recipe_prompt_dict = {}
+    recipes_per_meal = input["unique_recipes_per_meal"]
+    for meal in recipes_per_meal:
+        for i in range(recipes_per_meal[meal]):  
+            request_payload = {
+                "meal_type":                input.get("meal_type"),
+                "meal_style_instruction":   MEAL_STYLE_OVERRIDES[meal],
+                "goal":                     input.get("goal"),
+                "diet_type":                input.get("diet_type"),
+                "allergies":                input.get("allergies"),
+                "calories_per_day":         input.get("calories_per_day"),
+                "meals_per_day":            input.get("meals_per_day"),
+                "calories_target_per_meal": input.get("calories_target_per_meal"),
+                "cooking_time":             input.get("cooking_time"),
+                "household_size":           input.get("household_size"),
+                "cooking_skill":            input.get("cooking_skill"),
+                "meal_slots":               input.get("meal_slots"),
+
+            }
+            recipe_prompt_dict[meal] = (
+                f"Generate one {meal} recipe using the following user profile.\n"
+                "Follow the meal_style_instruction exactly.\n"
+                "Return only JSON matching the required schema.\n\n"
+                "The request payload is:\n"
+                f"{json.dumps(request_payload, indent=2)}"
+            )
+    return recipe_prompt_dict
 
 
-def _parse_recipe_completion_content(content: str | None) -> dict[str, Any]:
-    if not content:
-        raise RuntimeError("OpenAI returned an empty response")
-
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError("OpenAI response was not valid JSON") from exc
-
-
-def generate_with_openai_chat_completions(
-    profile: UserProfile,
-    *,
-    meal_type: str = "dinner",
-    model: str = DEFAULT_RECIPE_MODEL,
-    api_key: str | None = None,
-) -> dict[str, Any]:
-    """Calls OpenAI chat.completions and returns validated recipe JSON."""
-    try:
-        openai_module = importlib.import_module("openai")
-        OpenAI = openai_module.OpenAI
-    except ImportError as exc:
-        raise RuntimeError("openai package is required. Install with: uv pip install openai") from exc
-
-    key = api_key or os.getenv("OPENAI_API_KEY")
-    if not key:
-        raise RuntimeError("OPENAI_API_KEY is not set")
-
-    client = OpenAI(api_key=key)
-    payload = build_openai_chat_completions_request(
-        profile=profile,
-        meal_type=meal_type,
-        model=model,
-    )
-    completion = client.chat.completions.create(**payload)
-    return _parse_recipe_completion_content(completion.choices[0].message.content)
 
 
 async def generate_with_openai_chat_completions_async(
-    profile: UserProfile,
-    *,
-    meal_type: str = "dinner",
+    user_prompt: str,
     model: str = DEFAULT_RECIPE_MODEL,
     api_key: str | None = None,
-) -> dict[str, Any]:
+) -> str:
     """Asynchronously calls OpenAI chat.completions and returns validated recipe JSON."""
     try:
         openai_module = importlib.import_module("openai")
@@ -207,91 +174,39 @@ async def generate_with_openai_chat_completions_async(
         raise RuntimeError("OPENAI_API_KEY is not set")
 
     client = AsyncOpenAI(api_key=key)
-    payload = build_openai_chat_completions_request(
-        profile=profile,
-        meal_type=meal_type,
-        model=model,
-    )
-    completion = await client.chat.completions.create(**payload)
-    return _parse_recipe_completion_content(completion.choices[0].message.content)
-
-
-async def generate_many_with_openai_chat_completions_async(
-    profile: UserProfile,
-    meal_types: list[str],
-    *,
-    model: str = DEFAULT_RECIPE_MODEL,
-    api_key: str | None = None,
-    max_concurrency: int = 5,
-) -> list[dict[str, Any]]:
-    """Generates multiple recipes concurrently, preserving input order."""
-    if not meal_types:
-        return []
-
-    concurrency = max(1, max_concurrency)
-    semaphore = asyncio.Semaphore(concurrency)
-
-    async def _generate_one(meal_type: str) -> dict[str, Any]:
-        async with semaphore:
-            return await generate_with_openai_chat_completions_async(
-                profile=profile,
-                meal_type=meal_type,
-                model=model,
-                api_key=api_key,
-            )
-
-    tasks = [_generate_one(meal_type) for meal_type in meal_types]
-    return await asyncio.gather(*tasks)
-    
-
-# recipes/prompt_builders.py
-
-
-# The goal is to receive the meal type and the number of times per week the user wants that meal, and then generate a recipe that fits the meal type and user profile. For example, if the user wants 3 dinners per week and has a preference for Italian cuisine, we would generate an Italian dinner recipe that fits their dietary restrictions and cooking time.
-def build_recipe_user_prompt(profile: UserProfile, meal_type: str = "dinner") -> str:
-    allergies = _to_list(profile.allergies)
-    cuisines  = _to_list(profile.cuisine_preferences)
-    meal_slots = _to_list(getattr(profile, "meal_slots", []))
-    unique_recipes_per_meal = getattr(profile, "unique_recipes_per_meal", {}) or {}
-    if not isinstance(unique_recipes_per_meal, dict):
-        unique_recipes_per_meal = {}
-
-    unique_recipes_for_meal = unique_recipes_per_meal.get(meal_type, 1)
-    try:
-        unique_recipes_for_meal = max(1, int(unique_recipes_for_meal))
-    except (TypeError, ValueError):
-        unique_recipes_for_meal = 1
-
-    max_calories_per_meal = max(1, profile.calories_per_day // max(profile.meals_per_day, 1))
-
-    # Only pass cuisine into the payload if it's relevant for this meal
-    cuisine_instruction = MEAL_STYLE_OVERRIDES.get(meal_type, "")
-    apply_cuisine       = meal_type in CUISINE_APPLICABLE_MEALS
-
-    request_payload = {
-        "meal_type":                meal_type,
-        "meal_style_instruction":   cuisine_instruction,
-        "goal":                     profile.goal,
-        "diet_type":                profile.diet_type,
-        "allergies":                allergies,
-        "calories_per_day":         profile.calories_per_day,
-        "meals_per_day":            profile.meals_per_day,
-        "calories_target_per_meal": max_calories_per_meal,
-        "cooking_time":             profile.cooking_time,
-        "household_size":           profile.household_size,
-        "cooking_skill":            profile.cooking_skill,
-        "meal_slots":               meal_slots,
-        "unique_recipes_per_meal":  unique_recipes_per_meal,
-        "unique_recipes_for_this_meal_type": unique_recipes_for_meal,
-
-        # Only include cuisine for relevant meal types
-        "cuisine_preferences": cuisines if apply_cuisine else [],
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": RECIPE_SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": RECIPE_JSON_SCHEMA,
+        },
     }
 
-    return (
-        f"Generate one {meal_type} recipe using the following user profile.\n"
-        "Follow the meal_style_instruction exactly.\n"
-        "Return only JSON matching the required schema.\n\n"
-        f"{json.dumps(request_payload, indent=2)}"
-    )
+    completion = await client.chat.completions.create(**payload)
+    content = completion.choices[0].message.content
+    return json.loads(content)
+
+async def generate_recipe(input: dict = actual_input) -> dict[str, Any]:
+    """Main entry point for generating a recipe based on user input."""
+    user_prompts = build_recipe_user_prompts(input)
+    tasks = []
+    for meal, prompt in user_prompts.items():
+        task = asyncio.create_task(
+            generate_with_openai_chat_completions_async(prompt)
+        )
+        tasks.append((meal, task))
+
+    results = {}
+    for meal, task in tasks:
+        try:
+            recipe_json = await task
+            results[meal] = recipe_json
+        except Exception as exc:
+            results[meal] = {"error": str(exc)}
+
+    return results
 
