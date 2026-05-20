@@ -7,8 +7,7 @@ import json
 import os
 import importlib
 from typing import Any
-
-from questionnaire.models import UserProfile
+import random
 
 
 DEFAULT_RECIPE_MODEL = os.getenv("OPENAI_RECIPE_MODEL", "gpt-4.1-mini")
@@ -19,6 +18,7 @@ RECIPE_JSON_SCHEMA: dict[str, Any] = {
         "type": "object",
         "additionalProperties": False,
         "required": [
+            "meal_type",
             "recipe_name",
             "cuisine_type",
             "diet_choice",
@@ -26,12 +26,14 @@ RECIPE_JSON_SCHEMA: dict[str, Any] = {
             "estimated_time",
             "nutrition_per_serving",
             "ingredients",
+            "grocery_list",
             "recipe_steps",
         ],
         "properties": {
-            "recipe_name": {"type": "string", "minLength": 1},
-            "cuisine_type": {"type": "string", "minLength": 1},
-            "diet_choice": {"type": "string", "minLength": 1},
+            "meal_type": {"type": "string", "minLength": 5},
+            "recipe_name": {"type": "string", "minLength": 5},
+            "cuisine_type": {"type": "string", "minLength": 3},
+            "diet_choice": {"type": "string", "minLength": 3},
             "servings": {"type": "string", "minLength": 1},
             "estimated_time": {
                 "type": "object",
@@ -56,6 +58,11 @@ RECIPE_JSON_SCHEMA: dict[str, Any] = {
                 },
             },
             "ingredients": {
+                "type": "array",
+                "items": {"type": "string", "minLength": 1},
+                "minItems": 1,
+            },
+            "grocery_list": {
                 "type": "array",
                 "items": {"type": "string", "minLength": 1},
                 "minItems": 1,
@@ -110,28 +117,36 @@ MEAL_STYLE_OVERRIDES = {
     ),
 }
 
-actual_input = {
-    "goal": UserProfile.goal,
-    "diet_type": UserProfile.diet_type,
-    "allergies": UserProfile.allergies,
-    "calories_per_day": UserProfile.calories_per_day,
-    "meals_per_day": UserProfile.meals_per_day,
-    "cooking_time": UserProfile.cooking_time,
-    "cooking_skill": UserProfile.cooking_skill,
-    "household_size": UserProfile.household_size,
-    "meal_slots": UserProfile.meal_slots,
-    "unique_recipes_per_meal": UserProfile.unique_recipes_per_meal,
-    "cuisine_preferences": UserProfile.cuisine_preferences,  
-}
+def create_user_input(profile) -> dict[str, Any]:
+    """Convert a UserProfile model instance to a recipe input dict."""
+    return {
+        "goal": profile.goal,
+        "diet_type": profile.diet_type,
+        "allergies": profile.allergies,
+        "calories_per_day": profile.calories_per_day,
+        "meals_per_day": profile.meals_per_day,
+        "cooking_time": profile.cooking_time,
+        "cooking_skill": profile.cooking_skill,
+        "household_size": profile.household_size,
+        "meal_slots": profile.meal_slots,
+        "unique_recipes_per_meal": profile.unique_recipes_per_meal,
+        "cuisine_preferences": profile.cuisine_preferences,  
+    }
 
 
-def build_recipe_user_prompts(input: dict) -> dict[str, str]:
+
+def build_recipe_user_prompts(input: dict) -> dict[str, list[str]]:
     recipe_prompt_dict = {}
     recipes_per_meal = input["unique_recipes_per_meal"]
+    cuisine_preferences = input.get("cuisine_preferences", "")
+
+
     for meal in recipes_per_meal:
+        recipe_prompt_dict[meal] = []
         for i in range(recipes_per_meal[meal]):  
+            cuisine_preference = random.choice(cuisine_preferences) if cuisine_preferences else "None"
             request_payload = {
-                "meal_type":                input.get("meal_type"),
+                "meal_type":                meal,
                 "meal_style_instruction":   MEAL_STYLE_OVERRIDES[meal],
                 "goal":                     input.get("goal"),
                 "diet_type":                input.get("diet_type"),
@@ -143,9 +158,10 @@ def build_recipe_user_prompts(input: dict) -> dict[str, str]:
                 "household_size":           input.get("household_size"),
                 "cooking_skill":            input.get("cooking_skill"),
                 "meal_slots":               input.get("meal_slots"),
+                "cuisine_preference":       cuisine_preference,
 
             }
-            recipe_prompt_dict[meal] = (
+            recipe_prompt_dict[meal].append(
                 f"Generate one {meal} recipe using the following user profile.\n"
                 "Follow the meal_style_instruction exactly.\n"
                 "Return only JSON matching the required schema.\n\n"
@@ -161,7 +177,7 @@ async def generate_with_openai_chat_completions_async(
     user_prompt: str,
     model: str = DEFAULT_RECIPE_MODEL,
     api_key: str | None = None,
-) -> str:
+) -> dict[str, Any]:
     """Asynchronously calls OpenAI chat.completions and returns validated recipe JSON."""
     try:
         openai_module = importlib.import_module("openai")
@@ -190,23 +206,35 @@ async def generate_with_openai_chat_completions_async(
     content = completion.choices[0].message.content
     return json.loads(content)
 
-async def generate_recipe(input: dict = actual_input) -> dict[str, Any]:
-    """Main entry point for generating a recipe based on user input."""
+async def generate_recipe(input: dict | None = None) -> dict[str, list[dict[str, Any]]]:
+    """Main entry point for generating a recipe based on user input.
+    
+    Args:
+        input: Dict with recipe parameters. If None, creates a default UserProfile.
+               For testing, pass a dict directly without needing Django setup.
+    """
+    if input is None:
+        # Only import UserProfile if actually needed (lazy import)
+        from questionnaire.models import UserProfile
+        profile = UserProfile()
+        input = create_user_input(profile)
+    
     user_prompts = build_recipe_user_prompts(input)
     tasks = []
-    for meal, prompt in user_prompts.items():
-        task = asyncio.create_task(
-            generate_with_openai_chat_completions_async(prompt)
-        )
-        tasks.append((meal, task))
+    for meal, prompts in user_prompts.items():
+        for prompt in prompts:
+            task = asyncio.create_task(
+                generate_with_openai_chat_completions_async(prompt)
+            )
+            tasks.append((meal, task))
 
-    results = {}
+    results: dict[str, list[dict[str, Any]]] = {}
     for meal, task in tasks:
         try:
             recipe_json = await task
-            results[meal] = recipe_json
+            results.setdefault(meal, []).append(recipe_json)
         except Exception as exc:
-            results[meal] = {"error": str(exc)}
+            results.setdefault(meal, []).append({"error": str(exc)})
 
     return results
 
