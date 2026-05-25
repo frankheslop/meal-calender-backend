@@ -5,8 +5,6 @@ import os
 import time
 
 # Load environment variables from .env file
-from dotenv import load_dotenv
-load_dotenv()
 
 # Add meal_calender_api to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

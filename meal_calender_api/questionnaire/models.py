@@ -10,6 +10,10 @@ class UserProfile(models.Model):
         ("eat_healthy",  "Eat Healthy"),
         ("maintain",     "Maintain Weight"),
     ]
+    MEASURING_STANDARD_CHOICES = [
+        ("imperial", "Imperial (lbs, oz)"),
+        ("metric",   "Metric (kg, g)"),
+    ]
 
     DIET_CHOICES = [
         ("none",          "No Restriction"),
@@ -72,7 +76,6 @@ class UserProfile(models.Model):
 
     # ── Calories & Meals ───────────────────────────────────────────────────────
     calories_per_day = models.IntegerField(default=2000)
-    meals_per_day    = models.IntegerField(default=3)
 
     # ── Meal Slots — which meals the user wants ────────────────────────────────
     meal_slots = models.JSONField(default=list)
@@ -95,31 +98,9 @@ class UserProfile(models.Model):
     # Stores: ["italian", "japanese"]
     # MultipleChoiceField is not a native Django field — JSONField is the
     # correct approach. Validated against CUISINE_PREFERENCES in the serializer.
+    measuring_standard = models.CharField(max_length=10, choices=MEASURING_STANDARD_CHOICES, default="metric")
 
     # ── Meta ───────────────────────────────────────────────────────────────────
     completed  = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name        = "User Profile"
-        verbose_name_plural = "User Profiles"
-
-    def __str__(self):
-        return f"{self.user.username} — {self.get_goal_display()}"
-
-    # ── Helpers ────────────────────────────────────────────────────────────────
-    def get_calories_per_meal(self) -> int:
-        """Returns the target calories per individual meal."""
-        if not self.meals_per_day:
-            return self.calories_per_day
-        return self.calories_per_day // self.meals_per_day
-
-    def get_unique_recipes_for_meal(self, meal_type: str) -> int:
-        """Returns how many unique recipes are wanted for a given meal type."""
-        return self.unique_recipes_per_meal.get(meal_type, 1)
-
-    def get_active_meal_slots(self) -> list[str]:
-        """Returns the list of active meal slots in order."""
-        order = ["breakfast", "lunch", "dinner", "snack"]
-        return [slot for slot in order if slot in self.meal_slots]

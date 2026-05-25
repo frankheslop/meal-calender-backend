@@ -1,0 +1,536 @@
+🍳 Starting recipe generation with mock data...
+
+✅ Success!
+
+{
+  "breakfast": [
+    {
+      "meal_type": "breakfast",
+      "recipe_name": "Savory Tofu Scramble with Whole Grain Toast and Fruit Salad",
+      "cuisine_type": "Universal",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "10 minutes",
+        "cook_time": "15 minutes",
+        "total_time": "25 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "550 kcal",
+        "protein": "35g",
+        "fat": "15g",
+        "carbohydrates": "60g",
+        "fiber": "8g"
+      },
+      "ingredients": [
+        "14 oz firm tofu, crumbled",
+        "1 tablespoon olive oil",
+        "1/2 teaspoon turmeric powder",
+        "1/2 teaspoon garlic powder",
+        "1/4 teaspoon black pepper",
+        "1/2 teaspoon salt",
+        "1 cup diced bell peppers",
+        "1 cup chopped spinach",
+        "8 slices whole grain bread",
+        "2 cups mixed fresh fruit (berries, apple, banana)"
+      ],
+      "grocery_list": [
+        "firm tofu (14 oz)",
+        "olive oil",
+        "turmeric powder",
+        "garlic powder",
+        "black pepper",
+        "salt",
+        "bell peppers",
+        "fresh spinach",
+        "whole grain bread",
+        "mixed fresh fruit (berries, apple, banana)"
+      ],
+      "recipe_steps": [
+        "Press and crumble the firm tofu into bite-sized pieces.",
+        "Heat olive oil in a large non-stick skillet over medium heat.",
+        "Add diced bell peppers and saut\u00e9 for 3-4 minutes until slightly tender.",
+        "Add crumbled tofu to the skillet and stir well.",
+        "Sprinkle turmeric, garlic powder, black pepper, and salt over the tofu. Stir to evenly coat the tofu with spices.",
+        "Add chopped spinach and cook for another 3-4 minutes until spinach wilts and tofu is heated through.",
+        "While tofu cooks, toast the whole grain bread slices until golden brown.",
+        "Prepare the mixed fruit salad by cutting fruit into bite-sized pieces and mixing them together in a bowl.",
+        "Serve the tofu scramble hot alongside toasted whole grain bread and a portion of fresh fruit salad."
+      ]
+    },
+    {
+      "meal_type": "breakfast",
+      "recipe_name": "Savory Tofu Scramble with Whole Wheat Toast and Fruit",
+      "cuisine_type": "American",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "10 minutes",
+        "cook_time": "15 minutes",
+        "total_time": "25 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "460 kcal",
+        "protein": "34g",
+        "fat": "18g",
+        "carbohydrates": "38g",
+        "fiber": "7g"
+      },
+      "ingredients": [
+        "400g firm tofu",
+        "1 tablespoon olive oil",
+        "1/2 teaspoon turmeric powder",
+        "1/2 teaspoon garlic powder",
+        "1/4 teaspoon black pepper",
+        "1/2 teaspoon salt",
+        "1 cup spinach, chopped",
+        "1/2 cup diced tomatoes",
+        "8 slices whole wheat bread",
+        "2 cups mixed berries (e.g., strawberries, blueberries)"
+      ],
+      "grocery_list": [
+        "firm tofu",
+        "olive oil",
+        "turmeric powder",
+        "garlic powder",
+        "black pepper",
+        "salt",
+        "spinach",
+        "tomatoes",
+        "whole wheat bread",
+        "mixed berries"
+      ],
+      "recipe_steps": [
+        "Drain and press the tofu to remove excess water, then crumble it into small pieces.",
+        "Heat olive oil in a non-stick pan over medium heat.",
+        "Add crumbled tofu to the pan and cook for 2 minutes, stirring frequently.",
+        "Sprinkle turmeric powder, garlic powder, black pepper, and salt over the tofu; stir well to combine.",
+        "Add chopped spinach and diced tomatoes and cook for another 5-7 minutes until the vegetables are soft and tofu is heated through.",
+        "While tofu scrambles, toast the whole wheat bread until golden brown.",
+        "Serve the tofu scramble hot alongside the whole wheat toast and mixed berries for a nutritious breakfast."
+      ]
+    }
+  ],
+  "lunch": [
+    {
+      "meal_type": "lunch",
+      "recipe_name": "Italian Chicken and Quinoa Salad Bowl",
+      "cuisine_type": "Italian",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "15 minutes",
+        "cook_time": "15 minutes",
+        "total_time": "30 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "620 kcal",
+        "protein": "45g",
+        "fat": "12g",
+        "carbohydrates": "55g",
+        "fiber": "7g"
+      },
+      "ingredients": [
+        "1 cup quinoa",
+        "2 cups water",
+        "1 lb boneless skinless chicken breasts",
+        "1 tablespoon olive oil",
+        "1 teaspoon Italian seasoning",
+        "1 cup cherry tomatoes, halved",
+        "1 cup cucumber, diced",
+        "1/2 cup red onion, finely chopped",
+        "1/2 cup black olives, sliced",
+        "1/4 cup fresh basil, chopped",
+        "1 lemon, juiced",
+        "Salt and pepper to taste"
+      ],
+      "grocery_list": [
+        "Quinoa",
+        "Boneless skinless chicken breasts",
+        "Olive oil",
+        "Italian seasoning",
+        "Cherry tomatoes",
+        "Cucumber",
+        "Red onion",
+        "Black olives",
+        "Fresh basil",
+        "Lemon",
+        "Salt",
+        "Pepper"
+      ],
+      "recipe_steps": [
+        "Rinse quinoa under cold water until water runs clear.",
+        "Combine quinoa and water in a medium saucepan and bring to a boil.",
+        "Reduce heat to low, cover, and simmer for 12-15 minutes until quinoa is cooked and water is absorbed.",
+        "While quinoa cooks, season chicken breasts with Italian seasoning, salt, and pepper.",
+        "Heat olive oil in a skillet over medium heat.",
+        "Cook chicken breasts for about 6-7 minutes on each side or until fully cooked and internal temperature reaches 165\u00b0F (75\u00b0C).",
+        "Let chicken rest for a few minutes, then slice into strips.",
+        "In a large bowl, combine cooked quinoa, cherry tomatoes, cucumber, red onion, black olives, and basil.",
+        "Add lemon juice, salt, and pepper to the salad and toss to combine.",
+        "Divide the quinoa salad among four bowls and top each with sliced chicken.",
+        "Serve immediately or chill for a cold salad variation."
+      ]
+    },
+    {
+      "meal_type": "lunch",
+      "recipe_name": "Japanese-inspired High Protein Chicken Rice Bowl",
+      "cuisine_type": "Japanese",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "10 minutes",
+        "cook_time": "20 minutes",
+        "total_time": "30 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "620 kcal",
+        "protein": "48g",
+        "fat": "12g",
+        "carbohydrates": "60g",
+        "fiber": "5g"
+      },
+      "ingredients": [
+        "2 cups uncooked brown rice",
+        "1 lb chicken breast, cubed",
+        "1 tablespoon olive oil",
+        "2 cups chopped broccoli florets",
+        "1 large carrot, julienned",
+        "1 red bell pepper, sliced",
+        "3 green onions, chopped",
+        "2 tablespoons low sodium soy sauce",
+        "1 tablespoon mirin",
+        "1 teaspoon grated ginger",
+        "2 cloves garlic, minced",
+        "1 tablespoon sesame seeds (optional, omit if allergic)",
+        "Salt and pepper to taste"
+      ],
+      "grocery_list": [
+        "brown rice",
+        "chicken breast",
+        "olive oil",
+        "broccoli",
+        "carrot",
+        "red bell pepper",
+        "green onions",
+        "low sodium soy sauce",
+        "mirin",
+        "ginger",
+        "garlic",
+        "sesame seeds (optional)",
+        "salt",
+        "black pepper"
+      ],
+      "recipe_steps": [
+        "Cook brown rice according to package instructions and set aside.",
+        "In a small bowl, mix soy sauce, mirin, grated ginger, and minced garlic to make the marinade.",
+        "Heat olive oil in a large skillet over medium heat.",
+        "Add cubed chicken breast to the skillet and season with salt and pepper. Cook until browned on all sides, about 6-8 minutes.",
+        "Pour marinade over the chicken and stir well. Cook for an additional 3 minutes allowing the chicken to absorb the flavors.",
+        "Add broccoli florets, julienned carrot, and sliced red bell pepper to the skillet. Stir fry for 5-7 minutes until vegetables are tender but still crisp.",
+        "Remove from heat and stir in chopped green onions.",
+        "Divide cooked brown rice into four bowls and top with the chicken and vegetable mixture.",
+        "Sprinkle with sesame seeds if using and serve immediately."
+      ]
+    },
+    {
+      "meal_type": "lunch",
+      "recipe_name": "Italian Chickpea & Quinoa Salad Bowl",
+      "cuisine_type": "Italian",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "15 minutes",
+        "cook_time": "15 minutes",
+        "total_time": "30 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "620 kcal",
+        "protein": "38g",
+        "fat": "12g",
+        "carbohydrates": "70g",
+        "fiber": "10g"
+      },
+      "ingredients": [
+        "1 cup quinoa",
+        "2 cups water",
+        "1 can (15 oz) chickpeas, rinsed and drained",
+        "1 cup cherry tomatoes, halved",
+        "1 medium cucumber, diced",
+        "1/2 cup red onion, finely chopped",
+        "1/4 cup fresh basil, chopped",
+        "3 tbsp extra virgin olive oil",
+        "2 tbsp balsamic vinegar",
+        "1 tbsp lemon juice",
+        "2 cloves garlic, minced",
+        "Salt and pepper to taste",
+        "1/4 tsp red pepper flakes (optional)"
+      ],
+      "grocery_list": [
+        "quinoa",
+        "canned chickpeas",
+        "cherry tomatoes",
+        "cucumber",
+        "red onion",
+        "fresh basil",
+        "extra virgin olive oil",
+        "balsamic vinegar",
+        "lemon",
+        "garlic",
+        "salt",
+        "black pepper",
+        "red pepper flakes (optional)"
+      ],
+      "recipe_steps": [
+        "Rinse quinoa under cold water until water runs clear.",
+        "In a medium pot, combine quinoa and 2 cups water; bring to a boil.",
+        "Reduce heat, cover, and simmer for 15 minutes or until water is absorbed and quinoa is fluffy.",
+        "While quinoa cooks, prepare the dressing: whisk together olive oil, balsamic vinegar, lemon juice, minced garlic, salt, pepper, and red pepper flakes if using.",
+        "In a large bowl, combine chickpeas, cherry tomatoes, cucumber, red onion, and chopped basil.",
+        "Fluff cooked quinoa with a fork and allow to cool slightly, then add it to the bowl with vegetables.",
+        "Pour dressing over salad and toss to combine evenly.",
+        "Adjust seasoning with salt and pepper if needed.",
+        "Serve immediately or refrigerate for up to 2 hours before serving for flavors to meld."
+      ]
+    }
+  ],
+  "dinner": [
+    {
+      "meal_type": "dinner",
+      "recipe_name": "Italian Herb Chicken with Quinoa and Roasted Vegetables",
+      "cuisine_type": "Italian",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "10 minutes",
+        "cook_time": "20 minutes",
+        "total_time": "30 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "620 kcal",
+        "protein": "52g",
+        "fat": "18g",
+        "carbohydrates": "48g",
+        "fiber": "8g"
+      },
+      "ingredients": [
+        "4 boneless skinless chicken breasts",
+        "1 cup quinoa",
+        "2 cups low sodium chicken broth",
+        "1 red bell pepper, sliced",
+        "1 zucchini, sliced",
+        "1 yellow squash, sliced",
+        "2 tbsp olive oil",
+        "2 cloves garlic, minced",
+        "1 tsp dried oregano",
+        "1 tsp dried basil",
+        "1/2 tsp red pepper flakes",
+        "Salt and black pepper to taste",
+        "Fresh parsley for garnish"
+      ],
+      "grocery_list": [
+        "boneless skinless chicken breasts",
+        "quinoa",
+        "low sodium chicken broth",
+        "red bell pepper",
+        "zucchini",
+        "yellow squash",
+        "olive oil",
+        "garlic cloves",
+        "dried oregano",
+        "dried basil",
+        "red pepper flakes",
+        "salt",
+        "black pepper",
+        "fresh parsley"
+      ],
+      "recipe_steps": [
+        "Preheat the oven to 425\u00b0F (220\u00b0C).",
+        "Rinse the quinoa under cold water. In a medium pot, combine quinoa and chicken broth. Bring to a boil, then reduce heat to low, cover, and simmer for 15 minutes or until liquid is absorbed. Remove from heat and fluff with a fork.",
+        "Meanwhile, place sliced bell pepper, zucchini, and yellow squash on a baking sheet. Drizzle with 1 tablespoon olive oil, sprinkle with salt, pepper, and half the minced garlic. Toss to coat evenly. Roast in the oven for 15-20 minutes until tender and slightly caramelized.",
+        "While vegetables roast, heat the remaining olive oil in a large skillet over medium heat.",
+        "Season the chicken breasts with salt, pepper, oregano, basil, red pepper flakes, and remaining garlic.",
+        "Cook chicken breasts in the skillet for 5-6 minutes per side until cooked through and nicely browned.",
+        "Divide the cooked quinoa among four plates, top each with roasted vegetables and a chicken breast.",
+        "Garnish with chopped fresh parsley and serve hot."
+      ]
+    },
+    {
+      "meal_type": "dinner",
+      "recipe_name": "Teriyaki Salmon with Quinoa and Steamed Broccoli",
+      "cuisine_type": "japanese",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "10 minutes",
+        "cook_time": "20 minutes",
+        "total_time": "30 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "550 kcal",
+        "protein": "45g",
+        "fat": "18g",
+        "carbohydrates": "35g",
+        "fiber": "6g"
+      },
+      "ingredients": [
+        "4 salmon fillets (about 6 oz each)",
+        "1/4 cup tamari (gluten-free soy sauce)",
+        "2 tablespoons mirin",
+        "2 tablespoons sake",
+        "1 tablespoon brown sugar",
+        "1 tablespoon grated fresh ginger",
+        "2 cloves garlic, minced",
+        "1 tablespoon olive oil",
+        "1 1/2 cups quinoa",
+        "3 cups water",
+        "1 large head broccoli, cut into florets",
+        "Sesame seeds for garnish (optional)"
+      ],
+      "grocery_list": [
+        "Salmon fillets",
+        "Tamari sauce",
+        "Mirin",
+        "Sake",
+        "Brown sugar",
+        "Fresh ginger",
+        "Garlic cloves",
+        "Olive oil",
+        "Quinoa",
+        "Broccoli",
+        "Sesame seeds (optional)"
+      ],
+      "recipe_steps": [
+        "Rinse quinoa under cold water. In a medium pot, combine quinoa and water, bring to a boil, then reduce heat to low, cover, and simmer for 15 minutes until water is absorbed and quinoa is fluffy.",
+        "Meanwhile, in a small bowl, mix tamari, mirin, sake, brown sugar, grated ginger, and minced garlic to make the teriyaki sauce.",
+        "Heat olive oil in a large skillet over medium heat. Add salmon fillets skin side down and cook for 4-5 minutes until skin is crispy.",
+        "Flip salmon and pour teriyaki sauce over the fillets. Cook for another 5-6 minutes, basting occasionally, until salmon is cooked through and sauce is slightly thickened.",
+        "While salmon cooks, steam broccoli florets for 5-7 minutes until tender but still vibrant green.",
+        "Serve salmon over a bed of quinoa with a side of steamed broccoli. Spoon any remaining teriyaki sauce over the top and garnish with sesame seeds if desired."
+      ]
+    },
+    {
+      "meal_type": "dinner",
+      "recipe_name": "Japanese Grilled Chicken Teriyaki with Quinoa and Steamed Vegetables",
+      "cuisine_type": "Japanese",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "10 minutes",
+        "cook_time": "20 minutes",
+        "total_time": "30 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "620 kcal",
+        "protein": " Fifty two g",
+        "fat": "12g",
+        "carbohydrates": "65 g",
+        "fiber": "6g"
+      },
+      "ingredients": [
+        "4 boneless skinless chicken breasts",
+        "1/4 cup soy sauce (low sodium)",
+        "2 tbsp mirin (Japanese sweet rice wine)",
+        "2 tbsp sake",
+        "1 tbsp honey",
+        "1 tbsp grated fresh ginger",
+        "2 garlic cloves, minced",
+        "1 1/2 cups quinoa",
+        "3 cups water",
+        "1 head broccoli, cut into florets",
+        "2 medium carrots, sliced",
+        "1 tbsp sesame oil (optional, check nut allergy)",
+        "2 green onions, thinly sliced (for garnish)",
+        "1 tbsp sesame seeds (optional, omit if nut allergy)"
+      ],
+      "grocery_list": [
+        "boneless skinless chicken breasts",
+        "low sodium soy sauce",
+        "mirin (Japanese sweet rice wine)",
+        "sake",
+        "honey",
+        "fresh ginger",
+        "garlic cloves",
+        "quinoa",
+        "broccoli",
+        "carrots",
+        "sesame oil (optional)",
+        "green onions",
+        "sesame seeds (optional)"
+      ],
+      "recipe_steps": [
+        "Rinse quinoa under cold water until water runs clear. In a medium pot, bring 3 cups water to a boil. Add quinoa, reduce to a simmer, cover, and cook 15 minutes until water is absorbed and quinoa is fluffy. Remove from heat and let stand covered.",
+        "In a small bowl, whisk together soy sauce, mirin, sake, honey, grated ginger, and minced garlic to make teriyaki marinade.",
+        "Place chicken breasts in a shallow dish or zip-top bag and pour half of the teriyaki marinade over them. Marinate for 10 minutes while quinoa cooks.",
+        "Heat grill pan or outdoor grill over medium-high heat. Remove chicken from marinade and grill for 6-7 minutes on each side until cooked through and nicely charred. Brush with remaining marinade during the last few minutes of grilling.",
+        "Meanwhile, steam broccoli florets and sliced carrots until tender-crisp, about 5 minutes.",
+        "Heat sesame oil in a pan over medium heat (if using). Toss steamed vegetables briefly in oil for flavor; otherwise, serve plain.",
+        "Serve grilled chicken breasts over a bed of quinoa alongside steamed vegetables.",
+        "Garnish chicken with sliced green onions and sesame seeds if not allergic."
+      ]
+    },
+    {
+      "meal_type": "dinner",
+      "recipe_name": "Italian Grilled Chicken with Quinoa and Roasted Vegetables",
+      "cuisine_type": "Italian",
+      "diet_choice": "high_protein",
+      "servings": "4",
+      "estimated_time": {
+        "prep_time": "10 minutes",
+        "cook_time": "20 minutes",
+        "total_time": "30 minutes"
+      },
+      "nutrition_per_serving": {
+        "calories": "620 kcal",
+        "protein": "48g",
+        "fat": "12g",
+        "carbohydrates": "55g",
+        "fiber": "7g"
+      },
+      "ingredients": [
+        "4 boneless skinless chicken breasts",
+        "1 cup quinoa",
+        "2 cups low-sodium chicken broth",
+        "1 medium zucchini, sliced",
+        "1 cup cherry tomatoes, halved",
+        "1 red bell pepper, sliced",
+        "3 tablespoons olive oil",
+        "2 cloves garlic, minced",
+        "1 teaspoon dried oregano",
+        "1 teaspoon dried basil",
+        "Salt and freshly ground black pepper to taste",
+        "Fresh parsley, chopped for garnish",
+        "Juice of half a lemon"
+      ],
+      "grocery_list": [
+        "boneless skinless chicken breasts",
+        "quinoa",
+        "low-sodium chicken broth",
+        "zucchini",
+        "cherry tomatoes",
+        "red bell pepper",
+        "olive oil",
+        "garlic",
+        "dried oregano",
+        "dried basil",
+        "salt",
+        "black pepper",
+        "fresh parsley",
+        "lemon"
+      ],
+      "recipe_steps": [
+        "Preheat the grill or grill pan over medium-high heat.",
+        "Rinse quinoa under cold water. In a medium saucepan, bring chicken broth to a boil, add quinoa, reduce heat to low, cover and simmer for 15 minutes until liquid is absorbed and quinoa is fluffy.",
+        "Meanwhile, in a bowl, combine olive oil, minced garlic, dried oregano, dried basil, salt, and pepper.",
+        "Coat chicken breasts with half of the olive oil mixture.",
+        "Toss zucchini, cherry tomatoes, and red bell pepper with the remaining olive oil mixture and season with salt and pepper.",
+        "Grill chicken breasts for 6-7 minutes per side or until cooked through and internal temperature reaches 165\u00b0F (75\u00b0C).",
+        "At the same time, on a separate grill pan or baking sheet, grill or roast the vegetables until tender and slightly charred, about 10-12 minutes.",
+        "Fluff quinoa with a fork and stir in lemon juice and chopped parsley.",
+        "Serve grilled chicken breasts atop quinoa with roasted vegetables on the side."
+      ]
+    }
+  ]
+}
+
+⏱️  Total execution time: 0.29 minutes

@@ -9,6 +9,9 @@ import importlib
 from typing import Any
 import random
 
+"""Note: This module is designed to be used both within the Django app and as a standalone script for testing.
+The way that this would be used in the views is to first get the user then create the input 
+dict using create_user_input(user_profile), then pass that dict to generate_recipe(input)."""
 
 DEFAULT_RECIPE_MODEL = os.getenv("OPENAI_RECIPE_MODEL", "gpt-4.1-mini")
 RECIPE_JSON_SCHEMA: dict[str, Any] = {
@@ -124,7 +127,7 @@ def create_user_input(profile) -> dict[str, Any]:
         "diet_type": profile.diet_type,
         "allergies": profile.allergies,
         "calories_per_day": profile.calories_per_day,
-        "meals_per_day": profile.meals_per_day,
+        "meals_per_day": len(profile.meal_slots),
         "cooking_time": profile.cooking_time,
         "cooking_skill": profile.cooking_skill,
         "household_size": profile.household_size,
@@ -184,7 +187,9 @@ async def generate_with_openai_chat_completions_async(
         AsyncOpenAI = openai_module.AsyncOpenAI
     except ImportError as exc:
         raise RuntimeError("openai package is required. Install with: uv pip install openai") from exc
-
+    if not api_key:
+        from dotenv import load_dotenv
+        load_dotenv()
     key = api_key or os.getenv("OPENAI_API_KEY")
     if not key:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -206,18 +211,13 @@ async def generate_with_openai_chat_completions_async(
     content = completion.choices[0].message.content
     return json.loads(content)
 
-async def generate_recipe(input: dict | None = None) -> dict[str, list[dict[str, Any]]]:
+async def generate_recipe(input:dict) -> dict[str, list[dict[str, Any]]]:
     """Main entry point for generating a recipe based on user input.
     
     Args:
         input: Dict with recipe parameters. If None, creates a default UserProfile.
                For testing, pass a dict directly without needing Django setup.
     """
-    if input is None:
-        # Only import UserProfile if actually needed (lazy import)
-        from questionnaire.models import UserProfile
-        profile = UserProfile()
-        input = create_user_input(profile)
     
     user_prompts = build_recipe_user_prompts(input)
     tasks = []
