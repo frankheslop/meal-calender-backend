@@ -33,7 +33,8 @@ mock_input = {
     "household_size": 4,
     "meal_slots": ["breakfast", "lunch", "dinner"],
     "unique_recipes_per_meal": {"breakfast": 2, "lunch": 3, "dinner": 4},
-    "cuisine_preferences": ["italian", "japanese"],     
+    "cuisine_preferences": ["italian", "japanese"],
+    "measuring_standard": "metric",    
 }
 
 async def main():
@@ -41,7 +42,8 @@ async def main():
     try:
         recipes = await generate_recipe(mock_input)
         print("✅ Success!\n")
-        print(json.dumps(recipes, indent=2))
+        # Keep Unicode characters (like °C) readable in console/file output.
+        print(json.dumps(recipes, indent=2, ensure_ascii=False))
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback

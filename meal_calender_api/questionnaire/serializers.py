@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Questionnaire
+from .models import UserProfile
 class QuestionnaireSerializer(serializers.ModelSerializer):
     # Define fields based on the questionnaire model
     class Meta:
-        model = Questionnaire
+        model = UserProfile
         fields = (
             'goal',
             'diet_type',
