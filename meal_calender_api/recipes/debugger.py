@@ -14,9 +14,9 @@ import asyncio
 
 # Import only what we need - skip Django models entirely
 try:
-    from services import generate_recipe
+    from services import generate_monthly_recipes_list
 except ImportError:
-    print("Error: Could not import generate_recipe")
+    print("Error: Could not import generate_monthly_recipes_list")
     print("Make sure to run this from the meal_calender_api directory:")
     print("  cd meal_calender_api && python recipes/debugger.py")
     sys.exit(1)
@@ -33,19 +33,17 @@ mock_input = {
     "household_size": 4,
     "meal_slots": ["breakfast", "lunch", "dinner"],
     "unique_recipes_per_meal": {"breakfast": 2, "lunch": 3, "dinner": 4},
-    "cuisine_preferences": ["italian", "japanese"],
+    "cuisine_preferences": ["italian", "japanese", "mexican", "indian"],
     "measuring_standard": "metric",    
 }
 
 async def main():
     print("🍳 Starting recipe generation with mock data...\n")
     try:
-        recipes = await generate_recipe(mock_input)
-        print("✅ Success!\n")
+        recipes = await generate_monthly_recipes_list(mock_input)
         # Keep Unicode characters (like °C) readable in console/file output.
         print(json.dumps(recipes, indent=2, ensure_ascii=False))
     except Exception as e:
-        print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
 

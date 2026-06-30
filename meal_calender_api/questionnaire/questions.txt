@@ -21,6 +21,7 @@ Section 6: Calories      (1 question)
 =====================================================
 ## Section 1 — Your Goals
 =====================================================
+Toggle: "Do you have health goals or do you just want recipe ideas for meal planning"
 
 Field: goal
 Question: "What is your main health goal?"
@@ -33,11 +34,11 @@ Options:
 
 
 =====================================================
-## Section 2 — Your Diet
+## Section 2 — Your Meal Plan
 =====================================================
 
 Field: diet_type
-Question: "Do you follow a specific diet?"
+Question: "Do you follow a specific meal plan?"
 
 Options:
   - No Restriction
@@ -57,10 +58,10 @@ Options:
 ---
 
 Field: allergies
-Question: "Do you have any food allergies or intolerances? Select all that apply."
+Question: "Do you have any food allergies, intolerances or foods you want to avoid? Select all that apply."
 
-Options (multi-select):
-  - No Allergies
+Options (addition to list):
+  - None
   - Nuts
   - Dairy
   - Gluten
@@ -106,6 +107,13 @@ Helper text shown under each:
 
 Input: Number selector — 1 · 2 · 3 · 4 · 5
 
+---
+Field: meal_plan_repeat
+Question: How often would you like to repeat a weekly meal plan
+Options:
+  - weekly
+  - Every two weeks
+  - Every 4 weeks
 
 =====================================================
 ## Section 4 — Your Kitchen
@@ -166,6 +174,9 @@ Note shown to user:
 =====================================================
 ## Section 6 — Your Calories
 =====================================================
+Toggle that asks:
+Question: "Do you care about counting calories?"
+If yes then it can open the calory calculator if no will just set calories_per_day to the default of 2000 kcal
 
 Field: calories_per_day
 Question: "What is your daily calorie target?"

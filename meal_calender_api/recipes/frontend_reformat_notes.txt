@@ -1,0 +1,59 @@
+I am going to use these notes to get the start and end date of each particular meal in the frontend when that formatting neeeds to take place:
+
+
+def build_recipe_user_prompts_per_week(input: dict) -> dict[str, list[str]]:
+    recipe_prompt_dict = {}
+    recipes_per_meal = input["unique_recipes_per_meal"]
+    cuisine_preferences = input.get("cuisine_preferences", "")
+    # getting dates for the upcoming week to include in the prompt for better contextual recipe generation.
+    today = date.today()
+    days_since_monday = today.weekday()  # Monday=0, Sunday=6
+    start_date = today - timedelta(days=days_since_monday)  # Get the most recent Monday
+    end_date = start_date + timedelta(days=6)  # End of the week (Sunday)
+    days_in_week = 7
+
+    recipe_prompt_dict["start_date"] = start_date.isoformat()
+    recipe_prompt_dict["end_date"] = end_date.isoformat()
+    extra_recipe_choices = 3
+    for meal in recipes_per_meal:
+        recipe_prompt_dict[meal] = []
+        for i in range(int(recipes_per_meal[meal] + extra_recipe_choices)):
+            if i == 0:
+                days_span_meal = round(days_in_week / int(recipes_per_meal[meal])) + (days_in_week % int(recipes_per_meal[meal]))
+            days_span_meal = round(days_in_week / int(recipes_per_meal[meal]))
+            meal_start_date = start_date
+            meal_end_date = meal_start_date + timedelta(days=days_span_meal - 1)
+
+
+            cuisine_preference = random.choice(cuisine_preferences) if cuisine_preferences else "None"
+            request_payload = {
+                "meal_type":                meal,
+                "meal_style_instruction":   MEAL_STYLE_OVERRIDES[meal],
+                "goal":                     input.get("goal"),
+                "diet_type":                input.get("diet_type"),
+                "allergies":                input.get("allergies"),
+                "calories_per_day":         input.get("calories_per_day"),
+                "meals_per_day":            input.get("meals_per_day"),
+                "calories_target_per_meal": input.get("calories_target_per_meal"),
+                "cooking_time":             input.get("cooking_time"),
+                "household_size":           input.get("household_size"),
+                "cooking_skill":            input.get("cooking_skill"),
+                "meal_slots":               input.get("meal_slots"),
+                "cuisine_preference":       cuisine_preference,
+
+            }
+            recipe_prompt_dict[meal].append({
+                "recipe_start_date": meal_start_date.isoformat(),
+                "recipe_end_date": meal_end_date.isoformat(),
+                "prompt":
+                f"Generate one {meal} recipe using the following user profile.\n"
+                "Follow the meal_style_instruction exactly.\n"
+                "Return only JSON matching the required schema.\n\n"
+                "Set grocery_list as an array of objects with exactly these keys: item, amount, unit.\n\n"
+                "The request payload is:\n"
+                f"{json.dumps(request_payload, indent=2)}"}
+            )
+            start_date = meal_end_date + timedelta(days=1)  # Next meal starts the day after the current meal ends
+    return recipe_prompt_dict
+
+

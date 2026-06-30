@@ -1,4 +1,7 @@
 from django.db import models
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 # recipes/models.py
 class Recipe(models.Model):
     title        = models.CharField(max_length=200)

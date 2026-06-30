@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class UserProfile(models.Model):
@@ -31,20 +32,6 @@ class UserProfile(models.Model):
         ("kosher",        "Kosher"),
     ]
 
-    CUISINE_PREFERENCES = [
-        ("italian",       "Italian"),
-        ("mexican",       "Mexican"),
-        ("chinese",       "Chinese"),
-        ("indian",        "Indian"),
-        ("american",      "American"),
-        ("mediterranean", "Mediterranean"),
-        ("thai",          "Thai"),
-        ("japanese",      "Japanese"),
-        ("french",        "French"),
-        ("other",         "Other"),
-        ("none",          "No Preference"),
-    ]
-
     COOKING_TIME_CHOICES = [
         ("15",  "15 minutes or less"),
         ("30",  "30 minutes or less"),
@@ -70,9 +57,9 @@ class UserProfile(models.Model):
 
     # ── Health & Diet ──────────────────────────────────────────────────────────
     goal      = models.CharField(max_length=20, choices=GOAL_CHOICES,    default="eat_healthy")
-    diet_type = models.CharField(max_length=20, choices=DIET_CHOICES,    default="none")
-    allergies = models.JSONField(default=list)
-    # Stores: ["nuts", "dairy", "shellfish"]
+    meal_plan_type = models.CharField(max_length=20, choices=DIET_CHOICES,    default="none")
+    food_avoidances = models.JSONField(default=list)
+    # Stores: ["nuts", "dairy", "shellfish"], it includes both allergies and personal dislikes.
 
     # ── Calories & Meals ───────────────────────────────────────────────────────
     calories_per_day = models.IntegerField(default=2000)
@@ -81,6 +68,7 @@ class UserProfile(models.Model):
     meal_slots = models.JSONField(default=list)
     # Stores: ["breakfast", "lunch", "dinner"] or ["breakfast", "dinner"] etc.
     # Validated against MEAL_SLOT_CHOICES in the serializer
+    meal_plan_repetition = models.IntegerField(default=1, validators=[MinValueValidator(1), MaxValueValidator(4)])
 
     # ── Unique Recipes Per Meal — how many different recipes per meal type ──────
     unique_recipes_per_meal = models.JSONField(default=dict)

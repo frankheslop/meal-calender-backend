@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,8 +11,9 @@ from .serializers import RegisterSerializer, UserSerializer, LoginSerializer
 
 User = get_user_model()
 
-class RegisterView(APIView): 
-    # Open to everyone
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -26,14 +27,23 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
-    # Open to everyone
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
-            
+
+            # Try direct username authentication first.
             user = authenticate(username=username, password=password)
+
+            # If direct auth fails and input looks like an email, try email lookup.
+            if user is None and '@' in username:
+                candidate = User.objects.filter(email__iexact=username).only('username').first()
+                if candidate:
+                    user = authenticate(username=candidate.username, password=password)
+
             if user:
                 token, _ = Token.objects.get_or_create(user=user)
                 return Response({

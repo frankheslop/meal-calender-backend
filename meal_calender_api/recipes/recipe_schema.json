@@ -1,0 +1,141 @@
+{
+  "name": "recipe_generation_response",
+  "strict": true,
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "meal_type",
+      "recipe_name",
+      "cuisine_type",
+      "diet_choice",
+      "servings",
+      "estimated_time",
+      "nutrition_per_serving",
+      "ingredients",
+      "grocery_list",
+      "recipe_steps"
+    ],
+    "properties": {
+      "meal_type": {
+        "type": "string",
+        "minLength": 5
+      },
+      "recipe_name": {
+        "type": "string",
+        "minLength": 5
+      },
+      "cuisine_type": {
+        "type": "string",
+        "minLength": 3
+      },
+      "diet_choice": {
+        "type": "string",
+        "minLength": 3
+      },
+      "servings": {
+        "type": "string",
+        "minLength": 1
+      },
+      "estimated_time": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "prep_time",
+          "cook_time",
+          "total_time"
+        ],
+        "properties": {
+          "prep_time": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cook_time": {
+            "type": "string",
+            "minLength": 1
+          },
+          "total_time": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "nutrition_per_serving": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "calories",
+          "protein",
+          "fat",
+          "carbohydrates",
+          "fiber"
+        ],
+        "properties": {
+          "calories": {
+            "type": "string",
+            "minLength": 1
+          },
+          "protein": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fat": {
+            "type": "string",
+            "minLength": 1
+          },
+          "carbohydrates": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fiber": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "ingredients": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minItems": 1
+      },
+      "grocery_list": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "item",
+            "amount",
+            "unit"
+          ],
+          "properties": {
+            "item": {
+              "type": "string",
+              "minLength": 1
+            },
+            "amount": {
+              "type": "string",
+              "minLength": 1
+            },
+            "unit": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "minItems": 1
+      },
+      "recipe_steps": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minItems": 1
+      }
+    }
+  }
+}
