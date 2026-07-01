@@ -88,9 +88,6 @@ Options (multi-select — user can pick any combination):
 
 ---
 
-Field: meals_per_day
-Note: Auto-calculated from meal_slots — no question needed.
-      If the user selects breakfast, lunch and dinner, this is set to 3 automatically.
 
 ---
 
@@ -191,6 +188,12 @@ Optional:
   height, weight, age and activity level, and saves the result
   directly into this field.
 
+=====================================================
+## Section 7 - Measuring Standard
+=====================================================
+field: measuring standard
+What measuring standard do you use?
+choices: imperial or metric
 
 =====================================================
 ## Field → DB Reference

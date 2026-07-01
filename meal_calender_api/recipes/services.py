@@ -13,6 +13,10 @@ import random
 from datetime import date, timedelta
 import pdb
 
+from asgiref.sync import async_to_sync
+from django.db.models import Max
+from django.db import transaction
+
 """Note: This module is designed to be used both within the Django app and as a standalone script for testing.
 The way that this would be used in the views is to first get the user then create the input 
 dict using create_user_input(user_profile), then pass that dict to generate_recipe(input)."""
@@ -246,19 +250,23 @@ async def generate_week_recipes(
     return week_result
 
 
-async def generate_monthly_recipes_list(input:dict) -> dict[str, dict[str, Any]]:
+async def generate_monthly_recipes_list(
+    input: dict,
+    begin_date: date | None = None,
+) -> dict[str, dict[str, Any]]:
     """Generate monthly recipes grouped by week and meal.
 
     Recipes for the same meal within the same week are generated sequentially so each
     later prompt can see a compact summary of what was already created and avoid repeats.
     """
     number_of_weeks = 4
-    today = date.today()
+    anchor_date = begin_date or date.today()
     monthly_prompts = {}
     for week in range(number_of_weeks):
-        start_date = today + timedelta(weeks=week)
+        start_date = anchor_date + timedelta(weeks=week)
         user_prompts = build_weekly_recipe_prompts(input, start_date)
-        monthly_prompts[f"week_{week+1}"] = user_prompts
+        week_label = user_prompts["week_start_date"]
+        monthly_prompts[week_label] = user_prompts
 
     meals = list(input["unique_recipes_per_meal"].keys())
     results: dict[str, dict[str, Any]] = {}
@@ -275,4 +283,125 @@ async def generate_monthly_recipes_list(input:dict) -> dict[str, dict[str, Any]]
         results[week] = week_result
 
     return results
+
+
+def build_weekly_generation_records(
+    monthly_results: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Convert monthly output into one persistence record payload per week."""
+    weekly_records: list[dict[str, Any]] = []
+
+    for _, week_payload in monthly_results.items():
+        week_start_date = week_payload["week_start_date"]
+        week_end_date = week_payload["week_end_date"]
+        meals_output = {
+            key: value
+            for key, value in week_payload.items()
+            if key not in {"week_start_date", "week_end_date"}
+        }
+        weekly_records.append(
+            {
+                "week_start_date": week_start_date,
+                "week_end_date": week_end_date,
+                "meals_output": meals_output,
+            }
+        )
+
+    return weekly_records
+
+
+def save_weekly_recipe_generations(
+    job,
+    monthly_results: dict[str, dict[str, Any]],
+):
+    """Persist one WeeklyRecipeGeneration row per generated week."""
+    from .models import WeeklyRecipeGeneration
+
+    weekly_records = build_weekly_generation_records(monthly_results)
+    generation_rows = [
+        WeeklyRecipeGeneration(
+            job=job,
+            user=job.user,
+            week_start_date=date.fromisoformat(record["week_start_date"]),
+            week_end_date=date.fromisoformat(record["week_end_date"]),
+            meals_output=record["meals_output"],
+        )
+        for record in weekly_records
+    ]
+
+    with transaction.atomic():
+        WeeklyRecipeGeneration.objects.bulk_create(generation_rows)
+
+    return generation_rows
+
+
+def create_recipe_generation_job(user, profile, start_from_date: date | None = None):
+    """Create a queued generation job using the current questionnaire snapshot."""
+    from .models import RecipeGenerationJob
+
+    requested_input = create_user_input(profile)
+    return RecipeGenerationJob.objects.create(
+        user=user,
+        requested_input=requested_input,
+        start_from_date=start_from_date,
+    )
+
+
+def generate_and_store_weekly_recipes(job) -> dict[str, Any]:
+    """Generate four weeks of recipes for a queued job, then save one row per week."""
+    requested_input = job.requested_input
+    monthly_results = async_to_sync(generate_monthly_recipes_list)(requested_input, job.start_from_date)
+    generation_rows = save_weekly_recipe_generations(
+        job,
+        monthly_results,
+    )
+
+    return {
+        "job_id": job.id,
+        "weeks_saved": len(generation_rows),
+        "results": monthly_results,
+    }
+
+
+def maybe_queue_recipe_top_up(user) -> dict[str, Any]:
+    """Queue another 4-week generation when only one future week remains."""
+    from questionnaire.models import UserProfile
+
+    from .jobs import enqueue_recipe_generation_job
+    from .models import RecipeGenerationJob, WeeklyRecipeGeneration
+
+    if RecipeGenerationJob.objects.filter(
+        user=user,
+        status__in=[RecipeGenerationJob.Status.QUEUED, RecipeGenerationJob.Status.RUNNING],
+    ).exists():
+        return {"triggered": False, "reason": "job_already_in_progress"}
+
+    today = date.today()
+    current_week_start = today - timedelta(days=today.weekday())
+    future_weeks_count = (
+        WeeklyRecipeGeneration.objects.filter(user=user, week_start_date__gt=current_week_start)
+        .values("week_start_date")
+        .distinct()
+        .count()
+    )
+
+    if future_weeks_count > 1:
+        return {"triggered": False, "reason": "enough_future_weeks", "future_weeks_count": future_weeks_count}
+
+    try:
+        profile = UserProfile.objects.get(user=user, completed=True)
+    except UserProfile.DoesNotExist:
+        return {"triggered": False, "reason": "questionnaire_not_completed"}
+
+    latest_week_end = WeeklyRecipeGeneration.objects.filter(user=user).aggregate(max_end=Max("week_end_date"))["max_end"]
+    start_from_date = latest_week_end + timedelta(days=1) if latest_week_end else current_week_start
+
+    job = create_recipe_generation_job(user, profile, start_from_date=start_from_date)
+    enqueue_recipe_generation_job(job.id)
+    return {
+        "triggered": True,
+        "job_id": job.id,
+        "status": job.status,
+        "start_from_date": start_from_date.isoformat(),
+    }
 

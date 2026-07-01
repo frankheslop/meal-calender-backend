@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'subscriptions.apps.SubscriptionsConfig',
     'recipes.apps.RecipesConfig',
     'questionnaire.apps.QuestionnaireConfig',
-    'meal_plans.apps.MealPlansConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
