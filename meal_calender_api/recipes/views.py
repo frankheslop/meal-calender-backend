@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from .models import RecipeGenerationJob, WeeklyRecipeGeneration
 from .serializers import RecipeGenerationJobStatusSerializer, WeeklyRecipeGenerationSerializer
 from .services import maybe_queue_recipe_top_up
+from subscriptions.services import get_blocked_recipe_payload
 
 
 class RecipeGenerationJobStatusView(APIView):
@@ -14,6 +15,10 @@ class RecipeGenerationJobStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, job_id: int):
+        blocked_payload = get_blocked_recipe_payload(request.user)
+        if blocked_payload:
+            return Response(blocked_payload, status=402)
+
         try:
             job = RecipeGenerationJob.objects.get(id=job_id, user=request.user)
         except RecipeGenerationJob.DoesNotExist:
@@ -29,6 +34,10 @@ class UserWeeklyRecipeGenerationsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        blocked_payload = get_blocked_recipe_payload(request.user)
+        if blocked_payload:
+            return Response(blocked_payload, status=402)
+
         top_up = maybe_queue_recipe_top_up(request.user)
         weekly_generations = WeeklyRecipeGeneration.objects.filter(user=request.user)
         serializer = WeeklyRecipeGenerationSerializer(weekly_generations, many=True)
