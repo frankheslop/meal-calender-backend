@@ -2,11 +2,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from subscriptions.services import get_blocked_recipe_payload
 
 from .models import RecipeGenerationJob, WeeklyRecipeGeneration
 from .serializers import RecipeGenerationJobStatusSerializer, WeeklyRecipeGenerationSerializer
 from .services import maybe_queue_recipe_top_up
-from subscriptions.services import get_blocked_recipe_payload
 
 
 class RecipeGenerationJobStatusView(APIView):
@@ -22,7 +22,9 @@ class RecipeGenerationJobStatusView(APIView):
         try:
             job = RecipeGenerationJob.objects.get(id=job_id, user=request.user)
         except RecipeGenerationJob.DoesNotExist:
-            return Response({"detail": "Generation job not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Generation job not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         serializer = RecipeGenerationJobStatusSerializer(job)
         return Response(serializer.data, status=status.HTTP_200_OK)

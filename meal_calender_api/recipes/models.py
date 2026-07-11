@@ -31,6 +31,7 @@ class RecipeGenerationJob(models.Model):
     def __str__(self) -> str:
         return f"RecipeGenerationJob(id={self.id}, user_id={self.user_id}, status={self.status})"
 
+
 class WeeklyRecipeGeneration(models.Model):
     """Stores one generated week and its meal recipes."""
 

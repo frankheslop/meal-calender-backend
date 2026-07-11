@@ -1,7 +1,7 @@
-from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import UserProfile as Questionnaire
 from .serializers import QuestionnaireSerializer
@@ -9,6 +9,7 @@ from .serializers import QuestionnaireSerializer
 
 class QuestionnaireDetailView(APIView):
     """GET /api/questionnaire/answers/ — fetch the logged-in user's saved answers."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -25,6 +26,7 @@ class QuestionnaireSubmitView(APIView):
     POST /api/questionnaire/submit/ — submit answers for the first time.
     PUT  /api/questionnaire/submit/ — update existing answers.
     """
+
     permission_classes = [IsAuthenticated]
 
     def _queue_recipe_generation(self, user, questionnaire) -> dict:

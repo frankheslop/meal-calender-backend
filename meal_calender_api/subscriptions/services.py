@@ -1,14 +1,19 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from datetime import timezone as dt_timezone
-from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from .models import AccessGrant, PaymentRecord, SubscriptionAccount, SubscriptionEvent, SubscriptionPlan
+from .models import (
+    AccessGrant,
+    PaymentRecord,
+    SubscriptionAccount,
+    SubscriptionEvent,
+    SubscriptionPlan,
+)
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -75,7 +80,11 @@ def compute_entitlement_snapshot(user) -> dict[str, Any]:
             "next_action": {"type": "none", "endpoint": None},
         }
 
-    if account.status == SubscriptionAccount.Status.PAST_DUE and account.grace_end_at and account.grace_end_at >= now:
+    if (
+        account.status == SubscriptionAccount.Status.PAST_DUE
+        and account.grace_end_at
+        and account.grace_end_at >= now
+    ):
         return {
             "entitlement_active": True,
             "status": account.status,
@@ -191,14 +200,20 @@ def _sync_account_common_fields(account, stripe_subscription: dict[str, Any]):
         "incomplete_expired": SubscriptionAccount.Status.EXPIRED,
     }
     account.status = status_map.get(status, SubscriptionAccount.Status.PENDING)
-    account.stripe_subscription_id = stripe_subscription.get("id", "") or account.stripe_subscription_id
+    account.stripe_subscription_id = (
+        stripe_subscription.get("id", "") or account.stripe_subscription_id
+    )
 
     trial_end = stripe_subscription.get("trial_end")
     current_period_end = stripe_subscription.get("current_period_end")
 
-    account.trial_end_at = datetime.fromtimestamp(trial_end, tz=dt_timezone.utc) if trial_end else None
+    account.trial_end_at = (
+        datetime.fromtimestamp(trial_end, tz=dt_timezone.utc) if trial_end else None
+    )
     account.current_period_end_at = (
-        datetime.fromtimestamp(current_period_end, tz=dt_timezone.utc) if current_period_end else None
+        datetime.fromtimestamp(current_period_end, tz=dt_timezone.utc)
+        if current_period_end
+        else None
     )
     account.access_expires_at = account.current_period_end_at
 
@@ -228,14 +243,20 @@ def process_webhook_event(payload: dict[str, Any]):
         event.processing_error = ""
         event.save(update_fields=["processed", "processed_at", "processing_error", "updated_at"])
     except Exception as exc:
-        logger.exception("Failed to process Stripe event", extra={"event_id": event.stripe_event_id})
+        logger.exception(
+            "Failed to process Stripe event", extra={"event_id": event.stripe_event_id}
+        )
         event.processing_error = str(exc)
         event.save(update_fields=["processing_error", "updated_at"])
         raise
 
 
 def _get_user_from_customer_id(stripe_customer_id):
-    account = SubscriptionAccount.objects.filter(stripe_customer_id=stripe_customer_id).select_related("user").first()
+    account = (
+        SubscriptionAccount.objects.filter(stripe_customer_id=stripe_customer_id)
+        .select_related("user")
+        .first()
+    )
     if not account:
         return None, None
     return account.user, account
@@ -300,8 +321,12 @@ def _handle_invoice_paid(invoice_obj: dict[str, Any]):
     if not account:
         return
 
-    paid_at_ts = invoice_obj.get("status_transitions", {}).get("paid_at") or invoice_obj.get("created")
-    paid_at = datetime.fromtimestamp(paid_at_ts, tz=dt_timezone.utc) if paid_at_ts else timezone.now()
+    paid_at_ts = invoice_obj.get("status_transitions", {}).get("paid_at") or invoice_obj.get(
+        "created"
+    )
+    paid_at = (
+        datetime.fromtimestamp(paid_at_ts, tz=dt_timezone.utc) if paid_at_ts else timezone.now()
+    )
 
     PaymentRecord.objects.get_or_create(
         stripe_invoice_id=invoice_obj.get("id"),
@@ -320,7 +345,15 @@ def _handle_invoice_paid(invoice_obj: dict[str, Any]):
     account.status = SubscriptionAccount.Status.ACTIVE
     account.grace_end_at = None
     account.access_expires_at = account.current_period_end_at or (paid_at + timedelta(days=30))
-    account.save(update_fields=["last_payment_at", "status", "grace_end_at", "access_expires_at", "updated_at"])
+    account.save(
+        update_fields=[
+            "last_payment_at",
+            "status",
+            "grace_end_at",
+            "access_expires_at",
+            "updated_at",
+        ]
+    )
 
 
 def _handle_invoice_payment_failed(invoice_obj: dict[str, Any]):
@@ -354,7 +387,9 @@ def get_blocked_recipe_payload(user):
 
     code = snapshot["reason_code"] or "subscription_required"
     next_action_type = snapshot.get("next_action", {}).get("type", "checkout")
-    next_action_endpoint = snapshot.get("next_action", {}).get("endpoint", "/api/subscriptions/checkout-session/")
+    next_action_endpoint = snapshot.get("next_action", {}).get(
+        "endpoint", "/api/subscriptions/checkout-session/"
+    )
     message_map = {
         "subscription_required": "An active subscription is required to access recipe features.",
         "subscription_expired": "Your subscription is expired. Renew to continue using recipe features.",

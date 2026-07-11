@@ -8,3 +8,4 @@ django-filter
 djangorestframework-simplejwt
 dotenv
 stripe
+ruff

@@ -3,19 +3,18 @@
 from __future__ import annotations
 
 import asyncio
-import json
-import os
 import importlib
+import json
 import logging
-from pathlib import Path
-from typing import Any
+import os
 import random
 from datetime import date, timedelta
-import pdb
+from pathlib import Path
+from typing import Any
 
 from asgiref.sync import async_to_sync
-from django.db.models import Max
 from django.db import transaction
+from django.db.models import Max
 
 """Note: This module is designed to be used both within the Django app and as a standalone script for testing.
 The way that this would be used in the views is to first get the user then create the input 
@@ -56,7 +55,9 @@ def build_recipe_memory_block(previous_recipes: list[dict[str, Any]], meal: str)
         cuisine_type = recipe.get("cuisine_type", "Unknown cuisine")
         ingredients = recipe.get("ingredients", [])
         ingredient_text = ", ".join(ingredients) if ingredients else "Unknown ingredients"
-        lines.append(f"{index}. Recipe Name: {recipe_name} | Cuisine: {cuisine_type} | Ingredients: {ingredient_text}")
+        lines.append(
+            f"{index}. Recipe Name: {recipe_name} | Cuisine: {cuisine_type} | Ingredients: {ingredient_text}"
+        )
 
     return "\n".join(lines)
 
@@ -89,9 +90,8 @@ def create_user_input(profile) -> dict[str, Any]:
         "meal_slots": profile.meal_slots,
         "unique_recipes_per_meal": profile.unique_recipes_per_meal,
         "measuring_standard": profile.measuring_standard,
-        "cuisine_preferences": profile.cuisine_preferences,  
+        "cuisine_preferences": profile.cuisine_preferences,
     }
-
 
 
 def build_weekly_recipe_prompts(input: dict, begin_date: date) -> dict[str, Any]:
@@ -112,22 +112,23 @@ def build_weekly_recipe_prompts(input: dict, begin_date: date) -> dict[str, Any]
     for meal in recipes_per_meal:
         recipe_prompt_dict[meal] = []
         for i in range(recipes_per_meal[meal] + extra_recipe_choices):
-            cuisine_preference = random.choice(cuisine_preferences) if cuisine_preferences else "None"
+            cuisine_preference = (
+                random.choice(cuisine_preferences) if cuisine_preferences else "None"
+            )
             request_payload = {
-                "meal_type":                meal,
-                "meal_style_instruction":   MEAL_STYLE_OVERRIDES[meal],
-                "goal":                     input.get("goal"),
-                "meal_plan_type":           input.get("meal_plan_type"),
-                "food_avoidances":          input.get("food_avoidances"),
-                "calories_per_day":         input.get("calories_per_day"),
-                "meals_per_day":            input.get("meals_per_day"),
+                "meal_type": meal,
+                "meal_style_instruction": MEAL_STYLE_OVERRIDES[meal],
+                "goal": input.get("goal"),
+                "meal_plan_type": input.get("meal_plan_type"),
+                "food_avoidances": input.get("food_avoidances"),
+                "calories_per_day": input.get("calories_per_day"),
+                "meals_per_day": input.get("meals_per_day"),
                 "calories_target_per_meal": input.get("calories_target_per_meal"),
-                "cooking_time":             input.get("cooking_time"),
-                "household_size":           input.get("household_size"),
-                "cooking_skill":            input.get("cooking_skill"),
-                "meal_slots":               input.get("meal_slots"),
-                "cuisine_preference":       cuisine_preference,
-
+                "cooking_time": input.get("cooking_time"),
+                "household_size": input.get("household_size"),
+                "cooking_skill": input.get("cooking_skill"),
+                "meal_slots": input.get("meal_slots"),
+                "cuisine_preference": cuisine_preference,
             }
             prompt_text = (
                 f"Generate one {meal} recipe using the following user profile.\n"
@@ -141,8 +142,6 @@ def build_weekly_recipe_prompts(input: dict, begin_date: date) -> dict[str, Any]
             recipe_prompt_dict[meal].append({"prompt": prompt_text})
             recipe_prompt_dict["prompt_jobs"].append({"meal": meal, "prompt": prompt_text})
     return recipe_prompt_dict
-
-
 
 
 async def generate_with_openai_chat_completions_async(
@@ -159,10 +158,13 @@ async def generate_with_openai_chat_completions_async(
         openai_module = importlib.import_module("openai")
         AsyncOpenAI = openai_module.AsyncOpenAI
     except ImportError as exc:
-        raise RuntimeError("openai package is required. Install with: uv pip install openai") from exc
+        raise RuntimeError(
+            "openai package is required. Install with: uv pip install openai"
+        ) from exc
     if not api_key:
         # Only load dotenv when the caller did not explicitly provide an API key.
         from dotenv import load_dotenv
+
         load_dotenv()
     key = api_key or os.getenv("OPENAI_API_KEY")
     if not key:
@@ -350,7 +352,9 @@ def create_recipe_generation_job(user, profile, start_from_date: date | None = N
 def generate_and_store_weekly_recipes(job) -> dict[str, Any]:
     """Generate four weeks of recipes for a queued job, then save one row per week."""
     requested_input = job.requested_input
-    monthly_results = async_to_sync(generate_monthly_recipes_list)(requested_input, job.start_from_date)
+    monthly_results = async_to_sync(generate_monthly_recipes_list)(
+        requested_input, job.start_from_date
+    )
     generation_rows = save_weekly_recipe_generations(
         job,
         monthly_results,
@@ -386,14 +390,20 @@ def maybe_queue_recipe_top_up(user) -> dict[str, Any]:
     )
 
     if future_weeks_count > 1:
-        return {"triggered": False, "reason": "enough_future_weeks", "future_weeks_count": future_weeks_count}
+        return {
+            "triggered": False,
+            "reason": "enough_future_weeks",
+            "future_weeks_count": future_weeks_count,
+        }
 
     try:
         profile = UserProfile.objects.get(user=user, completed=True)
     except UserProfile.DoesNotExist:
         return {"triggered": False, "reason": "questionnaire_not_completed"}
 
-    latest_week_end = WeeklyRecipeGeneration.objects.filter(user=user).aggregate(max_end=Max("week_end_date"))["max_end"]
+    latest_week_end = WeeklyRecipeGeneration.objects.filter(user=user).aggregate(
+        max_end=Max("week_end_date")
+    )["max_end"]
     start_from_date = latest_week_end + timedelta(days=1) if latest_week_end else current_week_start
 
     job = create_recipe_generation_job(user, profile, start_from_date=start_from_date)
@@ -404,4 +414,3 @@ def maybe_queue_recipe_top_up(user) -> dict[str, Any]:
         "status": job.status,
         "start_from_date": start_from_date.isoformat(),
     }
-
